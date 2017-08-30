@@ -8,14 +8,17 @@ public class RemoteLayoutTaskFactory extends AbstractNetworkViewTaskFactory {
 
 
     private final CXServiceClient client;
+    private final String layoutName;
 
-    public RemoteLayoutTaskFactory(final CXServiceClient client) {
+
+    public RemoteLayoutTaskFactory(final CXServiceClient client, final String layoutName) {
         this.client = client;
+        this.layoutName = layoutName;
     }
 
     @Override
     public TaskIterator createTaskIterator(CyNetworkView view) {
-        return new TaskIterator(new RemoteLayoutTask(view, client));
+        return new TaskIterator(new RemoteLayoutTask(view, client, layoutName));
     }
 
 

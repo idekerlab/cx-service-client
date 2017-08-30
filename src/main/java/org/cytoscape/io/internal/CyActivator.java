@@ -50,10 +50,17 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties remoteLayoutTaskFactoryProps = new Properties();
 		remoteLayoutTaskFactoryProps.setProperty(PREFERRED_MENU, "Layout");
-		remoteLayoutTaskFactoryProps.setProperty(TITLE, "Remote layout");
+		remoteLayoutTaskFactoryProps.setProperty(TITLE, "NetworkX Spring layout");
 
-		RemoteLayoutTaskFactory remoteLayoutTaskFactory = new RemoteLayoutTaskFactory(client);
+		RemoteLayoutTaskFactory remoteLayoutTaskFactory = new RemoteLayoutTaskFactory(client, "spring");
 		registerService(bc, remoteLayoutTaskFactory, NetworkViewTaskFactory.class, remoteLayoutTaskFactoryProps);
+
+		Properties remoteLayoutTaskFactoryProps2 = new Properties();
+		remoteLayoutTaskFactoryProps2.setProperty(PREFERRED_MENU, "Layout");
+		remoteLayoutTaskFactoryProps2.setProperty(TITLE, "NetworkX Circular layout");
+
+		RemoteLayoutTaskFactory remoteLayoutTaskFactory2 = new RemoteLayoutTaskFactory(client, "circular");
+		registerService(bc, remoteLayoutTaskFactory2, NetworkViewTaskFactory.class, remoteLayoutTaskFactoryProps2);
 
 	}
 

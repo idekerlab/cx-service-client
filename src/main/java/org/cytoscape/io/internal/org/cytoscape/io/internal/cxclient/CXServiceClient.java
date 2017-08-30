@@ -34,10 +34,10 @@ public class CXServiceClient {
     }
 
 
-    public void callService(final String url, CyNetwork network) throws IOException, UnirestException {
+    public Map<String, List<AspectElement>> callService(
+            final String url, CyNetwork network, String layoutName) throws IOException, UnirestException {
 
-        Map<String, List<AspectElement>> result = encode(network);
-        System.out.println(result);
+        return encode(network, layoutName);
 
     }
 
@@ -61,7 +61,7 @@ public class CXServiceClient {
         return aspectMap;
     }
 
-    public Map<String, List<AspectElement>> encode(final CyNetwork network) throws IOException, UnirestException {
+    public Map<String, List<AspectElement>> encode(final CyNetwork network, final String layoutName) throws IOException, UnirestException {
 
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
@@ -83,9 +83,8 @@ public class CXServiceClient {
             throw new IOException();
         }
 
-        System.out.println(jsonString);
-
         HttpResponse<JsonNode> jsonResponse = Unirest.post("http://localhost/")
+                .queryString("layout-name", layoutName)
                 .header("accept", "application/json")
                 .header("Content-Type", "application/json")
                 .body(jsonString)
