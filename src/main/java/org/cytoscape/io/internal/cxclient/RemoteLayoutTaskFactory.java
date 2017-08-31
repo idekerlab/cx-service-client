@@ -1,6 +1,7 @@
 package org.cytoscape.io.internal.cxclient;
 
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 
@@ -8,16 +9,21 @@ public class RemoteLayoutTaskFactory extends AbstractNetworkViewTaskFactory {
 
     private final CXServiceClient client;
 
-    public String layoutName;
+    private final NetworkTaskFactory fitContent;
 
 
-    public RemoteLayoutTaskFactory(final CXServiceClient client) {
+    public RemoteLayoutTaskFactory(final CXServiceClient client, final NetworkTaskFactory fitContent) {
         this.client = client;
+        this.fitContent = fitContent;
     }
 
     @Override
     public TaskIterator createTaskIterator(CyNetworkView view) {
-        return new TaskIterator(new RemoteLayoutTask(view, client, layoutName));
+        System.out.println(fitContent);
+        return new TaskIterator(
+                new RemoteLayoutTask(view, client),
+                fitContent.createTaskIterator(view.getModel()).next()
+        );
     }
 
 

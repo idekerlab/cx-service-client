@@ -5,10 +5,12 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.internal.cxclient.CXServiceClient;
+import org.cytoscape.io.internal.cxclient.RemoteAttributeTaskFactory;
 import org.cytoscape.io.internal.cxclient.RemoteLayoutTaskFactory;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.work.TaskManager;
 import org.osgi.framework.BundleContext;
@@ -38,6 +40,8 @@ public class CyActivator extends AbstractCyActivator {
 
 
 		// Import dependencies
+		final NetworkTaskFactory fitContent = getService(bc, NetworkTaskFactory.class, "(title=Fit Content)");
+
 		final CySwingApplication desktop = getService(bc, CySwingApplication.class);
 		final CyApplicationConfiguration config = getService(bc, CyApplicationConfiguration.class);
 		final CyApplicationManager appManager = getService(bc, CyApplicationManager.class);
@@ -50,24 +54,21 @@ public class CyActivator extends AbstractCyActivator {
 
 		Properties remoteLayoutTaskFactoryProps = new Properties();
 		remoteLayoutTaskFactoryProps.setProperty(PREFERRED_MENU, "Layout");
-		remoteLayoutTaskFactoryProps.setProperty(TITLE, "NetworkX Layout");
+		remoteLayoutTaskFactoryProps.setProperty(TITLE, "Call remote layout service...");
 
-		RemoteLayoutTaskFactory remoteLayoutTaskFactory = new RemoteLayoutTaskFactory(client);
+		RemoteLayoutTaskFactory remoteLayoutTaskFactory = new RemoteLayoutTaskFactory(client, fitContent);
 		registerService(bc, remoteLayoutTaskFactory, NetworkViewTaskFactory.class, remoteLayoutTaskFactoryProps);
 
-//		Properties remoteLayoutTaskFactoryProps2 = new Properties();
-//		remoteLayoutTaskFactoryProps2.setProperty(PREFERRED_MENU, "Layout");
-//		remoteLayoutTaskFactoryProps2.setProperty(TITLE, "NetworkX Circular layout");
-//
-//		RemoteLayoutTaskFactory remoteLayoutTaskFactory2 = new RemoteLayoutTaskFactory(client);
-//		registerService(bc, remoteLayoutTaskFactory2, NetworkViewTaskFactory.class, remoteLayoutTaskFactoryProps2);
+		Properties remoteAttributeTaskFactoryProps = new Properties();
+		remoteAttributeTaskFactoryProps.setProperty(PREFERRED_MENU, "Tools");
+		remoteAttributeTaskFactoryProps.setProperty(TITLE, "Call remote attribute generator service...");
+
+		RemoteAttributeTaskFactory remoteAttributeTaskFactory = new RemoteAttributeTaskFactory(client);
+		registerService(bc, remoteAttributeTaskFactory, NetworkTaskFactory.class, remoteAttributeTaskFactoryProps);
 
 	}
 
 	@Override
 	public void shutDown() {
 	}
-
-
-
 }

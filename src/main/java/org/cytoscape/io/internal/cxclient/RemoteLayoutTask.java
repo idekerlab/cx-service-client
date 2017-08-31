@@ -21,18 +21,18 @@ public class RemoteLayoutTask extends AbstractNetworkViewTask {
     private final CXServiceClient client;
 
 
-    @Tunable(description="Layout name")
-    public String layoutName = "spring";
-
     @Tunable(description="Service URL")
     public String url = "http://localhost/";
+
+    @Tunable(description = "Scale factor (applied for the result returned from layout service)")
+    public Double scale = 1.0;
 
     /**
      * A base class for tasks that need to operate on a network view.
      *
      * @param view must be a non-empty network view for descendants to operate on
      */
-    public RemoteLayoutTask(CyNetworkView view, final CXServiceClient client, final String layoutName) {
+    public RemoteLayoutTask(CyNetworkView view, final CXServiceClient client) {
         super(view);
         this.client = client;
     }
@@ -41,20 +41,16 @@ public class RemoteLayoutTask extends AbstractNetworkViewTask {
     public void run(TaskMonitor taskMonitor) throws Exception {
 
         taskMonitor.setProgress(-1);
-        taskMonitor.setTitle("Calling remote layout service");
-        System.out.println("Calling remote service...");
+        taskMonitor.setTitle("Calling Remote CI Service");
+        taskMonitor.setStatusMessage("Preparing data...");
 
-
-        Map<String, List<AspectElement>> layoutMap = client.callService(url, view.getModel(), layoutName);
+        Map<String, List<AspectElement>> layoutMap = client.callService(url, view.getModel(), taskMonitor);
 
         System.out.println("================================== result");
         System.out.println("================================== W: "
                 + view.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH));
         System.out.println("================================== h: "
                 + view.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT));
-
-
-        double scale = view.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH);
 
 
         final List<AspectElement> layouts = layoutMap.get(ASPECT_NAME);

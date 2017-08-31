@@ -13,6 +13,7 @@ import org.cytoscape.io.internal.ViewWriterFactoryManager;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.work.TaskMonitor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -36,13 +37,13 @@ public class CXServiceClient {
 
 
     public Map<String, List<AspectElement>> callService(
-            final String url, CyNetwork network, String layoutName) throws IOException, UnirestException {
+            final String url, CyNetwork network, TaskMonitor tm) throws IOException, UnirestException {
 
-        return encode(url, network, layoutName);
+        return encode(url, network, tm);
 
     }
 
-    private final Map<String, List<AspectElement>> decode(InputStream is) throws IOException {
+    private final Map<String, List<AspectElement>> decode(InputStream is, TaskMonitor tm) throws IOException {
 
         ObjectMapper objectMapper = new ObjectMapper();
         CIResponse<?> res = objectMapper.readValue(is, CIResponse.class);
@@ -53,6 +54,7 @@ public class CXServiceClient {
             throw new IOException("Remote Layout returned errors");
         }
 
+        tm.setStatusMessage("Processing result...");
         final CxReader reader = CxReader.createInstance(
                 objectMapper.writeValueAsString(res.data),
                 CxioUtil.getAllAvailableAspectFragmentReaders());
@@ -62,7 +64,7 @@ public class CXServiceClient {
         return aspectMap;
     }
 
-    public Map<String, List<AspectElement>> encode(String url, final CyNetwork network, final String layoutName) throws IOException, UnirestException {
+    public Map<String, List<AspectElement>> encode(String url, final CyNetwork network, TaskMonitor tm) throws IOException, UnirestException {
 
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
@@ -84,15 +86,19 @@ public class CXServiceClient {
             throw new IOException();
         }
 
-        HttpResponse<JsonNode> jsonResponse = Unirest.post(url)
-                .queryString("layout-name", layoutName)
+        tm.setStatusMessage("Sending CX to remote service...");
+
+        Unirest.setTimeouts(10000000, 60000000);
+
+        HttpResponse<JsonNode> jsonResponse = Unirest
+                .post(url)
                 .header("accept", "application/json")
                 .header("Content-Type", "application/json")
                 .body(jsonString)
                 .asJson();
 
         InputStream raw = jsonResponse.getRawBody();
-        return decode(raw);
+        return decode(raw, tm);
     }
 
 }
