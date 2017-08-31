@@ -3,17 +3,17 @@ package org.cytoscape.io.internal.org.cytoscape.io.internal.cxclient;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.Tunable;
 
 public class RemoteLayoutTaskFactory extends AbstractNetworkViewTaskFactory {
 
-
     private final CXServiceClient client;
-    private final String layoutName;
+
+    public String layoutName;
 
 
-    public RemoteLayoutTaskFactory(final CXServiceClient client, final String layoutName) {
+    public RemoteLayoutTaskFactory(final CXServiceClient client) {
         this.client = client;
-        this.layoutName = layoutName;
     }
 
     @Override

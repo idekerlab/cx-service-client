@@ -29,6 +29,7 @@ public class CXServiceClient {
     private ViewWriterFactoryManager manager;
 
 
+
     public CXServiceClient(ViewWriterFactoryManager manager) {
         this.manager = manager;
     }
@@ -37,7 +38,7 @@ public class CXServiceClient {
     public Map<String, List<AspectElement>> callService(
             final String url, CyNetwork network, String layoutName) throws IOException, UnirestException {
 
-        return encode(network, layoutName);
+        return encode(url, network, layoutName);
 
     }
 
@@ -61,7 +62,7 @@ public class CXServiceClient {
         return aspectMap;
     }
 
-    public Map<String, List<AspectElement>> encode(final CyNetwork network, final String layoutName) throws IOException, UnirestException {
+    public Map<String, List<AspectElement>> encode(String url, final CyNetwork network, final String layoutName) throws IOException, UnirestException {
 
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
@@ -83,7 +84,7 @@ public class CXServiceClient {
             throw new IOException();
         }
 
-        HttpResponse<JsonNode> jsonResponse = Unirest.post("http://localhost/")
+        HttpResponse<JsonNode> jsonResponse = Unirest.post(url)
                 .queryString("layout-name", layoutName)
                 .header("accept", "application/json")
                 .header("Content-Type", "application/json")

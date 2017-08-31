@@ -20,8 +20,12 @@ public class RemoteLayoutTask extends AbstractNetworkViewTask {
 
     private final CXServiceClient client;
 
+
     @Tunable(description="Layout name")
-    private final String layoutName;
+    public String layoutName = "spring";
+
+    @Tunable(description="Service URL")
+    public String url = "http://localhost/";
 
     /**
      * A base class for tasks that need to operate on a network view.
@@ -31,16 +35,17 @@ public class RemoteLayoutTask extends AbstractNetworkViewTask {
     public RemoteLayoutTask(CyNetworkView view, final CXServiceClient client, final String layoutName) {
         super(view);
         this.client = client;
-        this.layoutName = layoutName;
     }
 
     @Override
     public void run(TaskMonitor taskMonitor) throws Exception {
 
+        taskMonitor.setProgress(-1);
+        taskMonitor.setTitle("Calling remote layout service");
         System.out.println("Calling remote service...");
 
 
-        Map<String, List<AspectElement>> layoutMap = client.callService("", view.getModel(), layoutName);
+        Map<String, List<AspectElement>> layoutMap = client.callService(url, view.getModel(), layoutName);
 
         System.out.println("================================== result");
         System.out.println("================================== W: "
