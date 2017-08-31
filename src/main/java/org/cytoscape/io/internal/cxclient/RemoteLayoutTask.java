@@ -1,4 +1,4 @@
-package org.cytoscape.io.internal.org.cytoscape.io.internal.cxclient;
+package org.cytoscape.io.internal.cxclient;
 
 import org.cxio.aspects.datamodels.CartesianLayoutElement;
 import org.cxio.core.interfaces.AspectElement;

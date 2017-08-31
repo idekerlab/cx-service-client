@@ -1,4 +1,4 @@
-package org.cytoscape.io.internal.org.cytoscape.io.internal.cxclient;
+package org.cytoscape.io.internal.cxclient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;

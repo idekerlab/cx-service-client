@@ -1,9 +1,8 @@
-package org.cytoscape.io.internal.org.cytoscape.io.internal.cxclient;
+package org.cytoscape.io.internal.cxclient;
 
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.Tunable;
 
 public class RemoteLayoutTaskFactory extends AbstractNetworkViewTaskFactory {
 

@@ -5,6 +5,11 @@ import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * Simple OSGi service manager for importing CX Writer object.
+ *
+ */
 public class ViewWriterFactoryManager {
 
     // ID of the CX writer service
