@@ -1,12 +1,11 @@
 # Simple Client for CX Services
 
 ## Introduction
-This is an simple Cytoscape App to call 
+This is an simple Cytoscape App to call
 Simple client for CX-based services
 
 ## How to Build
-
-To build this Cytoscape app, you need the following:
+This app is not ready for the App Store, and you need to build it by yourself.  To build this Cytoscape app, you need the following:
 
 - Latest version of JDK 8 (Oracle's one is recommended)
 - Apache Maven 3
@@ -21,7 +20,15 @@ To build this Cytoscape app, you need the following:
 This app adds two menu items:
 
 - Layout &rarr; Call remote layout...
-- Tools &rarr; Call remote attribute service... 
+- Tools &rarr; Call remote attribute service...
+
+### Parameters
+
+#### URL
+In this version, you need to pass all of the parameters as an URL.  This means this URL parameter is the only path to send optional parameters to CI services.
+
+##### Example
+* ```http://localhost:3000?prog=dot```
 
 (TBD)
 
