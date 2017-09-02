@@ -6,12 +6,22 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.internal.cxclient.CXServiceClient;
 import org.cytoscape.io.internal.cxclient.RemoteAttributeTaskFactory;
+import org.cytoscape.io.internal.cxclient.RemoteGraphTaskFactory;
 import org.cytoscape.io.internal.cxclient.RemoteLayoutTaskFactory;
+import org.cytoscape.io.internal.reader.LoadNetworkStreamTaskFactoryImpl;
+import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
@@ -30,13 +40,15 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 
-		final ViewWriterFactoryManager viewWriterManager = new ViewWriterFactoryManager();
+		final IOFactoryManager ioManager = new IOFactoryManager();
 
-		registerServiceListener(bc, viewWriterManager, "addFactory", "removeFactory",
+		registerServiceListener(bc, ioManager, "addFactory", "removeFactory",
 				CyNetworkViewWriterFactory.class);
+		registerServiceListener(bc, ioManager, "addReaderFactory",
+				"removeReaderFactory", InputStreamTaskFactory.class);
 
 
-		final CXServiceClient client = new CXServiceClient(viewWriterManager);
+
 
 
 		// Import dependencies
@@ -52,6 +64,19 @@ public class CyActivator extends AbstractCyActivator {
 		final CyProperty<Properties> cyProp = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 
 
+		CyNetworkManager netmgr = getService(bc, CyNetworkManager.class);
+		CyNetworkViewManager networkViewManager = getService(bc, CyNetworkViewManager.class);
+		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+		CyNetworkNaming cyNetworkNaming = getService(bc, CyNetworkNaming.class);
+		VisualMappingManager vmm = getService(bc, VisualMappingManager.class);
+		final CyNetworkViewFactory nullNetworkViewFactory = getService(bc, CyNetworkViewFactory.class);
+
+		LoadNetworkStreamTaskFactoryImpl loadNetworkTF = new LoadNetworkStreamTaskFactoryImpl(netmgr, networkViewManager, cyProp,
+				cyNetworkNaming, vmm, nullNetworkViewFactory, serviceRegistrar);
+
+		final CXServiceClient client = new CXServiceClient(ioManager, loadNetworkTF);
+
+
 		Properties remoteLayoutTaskFactoryProps = new Properties();
 		remoteLayoutTaskFactoryProps.setProperty(PREFERRED_MENU, "Layout");
 		remoteLayoutTaskFactoryProps.setProperty(TITLE, "Call remote layout service...");
@@ -65,6 +90,13 @@ public class CyActivator extends AbstractCyActivator {
 
 		RemoteAttributeTaskFactory remoteAttributeTaskFactory = new RemoteAttributeTaskFactory(client);
 		registerService(bc, remoteAttributeTaskFactory, NetworkTaskFactory.class, remoteAttributeTaskFactoryProps);
+
+		Properties loadTaskFactoryProps = new Properties();
+		loadTaskFactoryProps.setProperty(PREFERRED_MENU, "Tools");
+		loadTaskFactoryProps.setProperty(TITLE, "Call remote graph generator service...");
+
+		RemoteGraphTaskFactory remoteGraphTaskFactory = new RemoteGraphTaskFactory(client);
+		registerService(bc,remoteGraphTaskFactory, TaskFactory.class, loadTaskFactoryProps);
 
 	}
 

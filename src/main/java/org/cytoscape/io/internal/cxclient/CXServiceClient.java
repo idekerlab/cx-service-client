@@ -9,12 +9,18 @@ import org.cxio.core.CxReader;
 import org.cxio.core.interfaces.AspectElement;
 import org.cxio.util.CxioUtil;
 import org.cytoscape.ci.model.CIResponse;
-import org.cytoscape.io.internal.ViewWriterFactoryManager;
+import org.cytoscape.io.internal.IOFactoryManager;
+import org.cytoscape.io.internal.reader.LoadNetworkStreamTaskFactoryImpl;
+import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,13 +32,17 @@ public class CXServiceClient {
 
     // CXNetwork Writer
     private CyNetworkViewWriterFactory writerFactory;
+    private InputStreamTaskFactory readerFactory;
 
-    private ViewWriterFactoryManager manager;
+    private final LoadNetworkStreamTaskFactoryImpl loadNetworkTF;
+
+    private IOFactoryManager manager;
 
 
 
-    public CXServiceClient(ViewWriterFactoryManager manager) {
+    public CXServiceClient(IOFactoryManager manager, LoadNetworkStreamTaskFactoryImpl loadNetworkTF) {
         this.manager = manager;
+        this.loadNetworkTF = loadNetworkTF;
     }
 
 
@@ -40,6 +50,53 @@ public class CXServiceClient {
             final String url, CyNetwork network, TaskMonitor tm) throws IOException, UnirestException {
 
         return encode(url, network, tm);
+
+    }
+
+    public void callService(
+            final String url, TaskMonitor tm) throws Exception {
+
+        importGraph(url, tm);
+
+    }
+
+    private void importGraph(final String url, final TaskMonitor tm) throws Exception {
+
+
+        if(readerFactory == null) {
+            readerFactory = manager.getReaderFactory();
+        }
+
+        Unirest.setTimeouts(10000000, 60000000);
+        HttpResponse<JsonNode> jsonResponse = Unirest
+                .post(url)
+                .header("accept", "application/json")
+                .header("Content-Type", "application/json")
+                .body("[]")
+                .asJson();
+
+        InputStream is = jsonResponse.getRawBody();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        CIResponse<?> res = objectMapper.readValue(is, CIResponse.class);
+
+        if(res.errors.size()!= 0) {
+            System.out.println(res.errors);
+            throw new IOException("Remote graph generator returned errors");
+        }
+
+        final ByteArrayInputStream dataIs = new ByteArrayInputStream(objectMapper.writeValueAsBytes(res.data));
+
+        InputStreamTaskFactory readerTF = readerFactory;
+        TaskIterator itr = readerTF.createTaskIterator(dataIs, "RemoteGraph");
+        CyNetworkReader reader = (CyNetworkReader) itr.next();
+        TaskIterator tasks = loadNetworkTF.createTaskIterator("Generated", reader);
+
+
+        while (tasks.hasNext()) {
+            final Task task = tasks.next();
+            task.run(tm);
+        }
 
     }
 
