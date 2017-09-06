@@ -11,6 +11,8 @@ import org.cytoscape.io.internal.cxclient.RemoteLayoutTaskFactory;
 import org.cytoscape.io.internal.reader.LoadNetworkStreamTaskFactoryImpl;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -64,6 +66,11 @@ public class CyActivator extends AbstractCyActivator {
 		final CyProperty<Properties> cyProp = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 
 
+		CyNetworkFactory networkFactory = getService(bc, CyNetworkFactory.class);
+
+		// Create dummy network
+		final CyNetwork DUMMY = networkFactory.createNetwork();
+
 		CyNetworkManager netmgr = getService(bc, CyNetworkManager.class);
 		CyNetworkViewManager networkViewManager = getService(bc, CyNetworkViewManager.class);
 		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
@@ -74,7 +81,7 @@ public class CyActivator extends AbstractCyActivator {
 		LoadNetworkStreamTaskFactoryImpl loadNetworkTF = new LoadNetworkStreamTaskFactoryImpl(netmgr, networkViewManager, cyProp,
 				cyNetworkNaming, vmm, nullNetworkViewFactory, serviceRegistrar);
 
-		final CXServiceClient client = new CXServiceClient(ioManager, loadNetworkTF);
+		final CXServiceClient client = new CXServiceClient(ioManager, loadNetworkTF, DUMMY);
 
 
 		Properties remoteLayoutTaskFactoryProps = new Properties();

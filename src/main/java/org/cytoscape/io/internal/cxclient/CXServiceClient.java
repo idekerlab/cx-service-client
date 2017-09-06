@@ -38,11 +38,14 @@ public class CXServiceClient {
 
     private IOFactoryManager manager;
 
+    private CyNetwork dummy;
 
 
-    public CXServiceClient(IOFactoryManager manager, LoadNetworkStreamTaskFactoryImpl loadNetworkTF) {
+
+    public CXServiceClient(IOFactoryManager manager, LoadNetworkStreamTaskFactoryImpl loadNetworkTF, CyNetwork DUMMY) {
         this.manager = manager;
         this.loadNetworkTF = loadNetworkTF;
+        this.dummy = DUMMY;
     }
 
 
@@ -72,7 +75,7 @@ public class CXServiceClient {
                 .post(url)
                 .header("accept", "application/json")
                 .header("Content-Type", "application/json")
-                .body("[]")
+                .body(encodeDummy())
                 .asJson();
 
         InputStream is = jsonResponse.getRawBody();
@@ -155,7 +158,33 @@ public class CXServiceClient {
                 .asJson();
 
         InputStream raw = jsonResponse.getRawBody();
+
         return decode(raw, tm);
     }
+
+    private String encodeDummy() throws IOException {
+        final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        // This is a CXWriter object
+        if(this.writerFactory == null) {
+            writerFactory = manager.getCxFactory();
+            if(writerFactory == null) {
+                throw new NullPointerException("Could not find CX Writer");
+            }
+        }
+
+        final CyWriter writer = this.writerFactory.createWriter(stream, dummy);
+        String jsonString = null;
+        try {
+            writer.run(null);
+            jsonString = stream.toString("UTF-8");
+            stream.close();
+        } catch (Exception e) {
+            throw new IOException();
+        }
+        return jsonString;
+
+    }
+
+
 
 }
